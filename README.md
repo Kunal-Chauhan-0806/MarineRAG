@@ -1,18 +1,100 @@
-# MarineRAG: Maritime Regulations Assistant
+# ⚓ MarineRAG: Maritime Regulations Assistant
 
-A Retrieval-Augmented Generation (RAG) system that answers maritime safety questions
-from COLREGs, SOLAS and MARPOL documents, with page-level citations and a refusal
-when the answer is not in the documents.
+A Retrieval-Augmented Generation (RAG) assistant that answers maritime safety questions from **COLREGs, SOLAS and MARPOL** documents. Every answer carries **page-level citations**, and the assistant **refuses to answer** when the documents do not contain the answer instead of guessing.
 
-## Stack
-Python, sentence-transformers (all-MiniLM-L6-v2), FAISS, Ollama (llama3.2), Streamlit
+Runs fully **locally and offline** (no API keys, no cloud) using Ollama, which matters for ships with limited connectivity.
 
-## Run
-    pip install sentence-transformers faiss-cpu pypdf openai streamlit numpy
-    ollama pull llama3.2
-    # put PDFs in data/
-    streamlit run app.py
+## Demo
+
+| Cited answer | Retrieved sources |
+|---|---|
+| ![Chat answer](docs/screenshots/01-chat-answer.png) | ![Sources](docs/screenshots/02-sources.png) |
+
+| Refusal when out of scope | Filters and settings |
+|---|---|
+| ![Refusal](docs/screenshots/03-refusal.png) | ![Sidebar](docs/screenshots/04-filters-sidebar.png) |
+
+| Usage analytics | Evaluation output |
+|---|---|
+| ![Analytics](docs/screenshots/05-analytics.png) | ![Evaluation](docs/screenshots/06-eval-results.png) |
+
+## Features
+
+- **Page-cited answers** from the loaded regulation PDFs
+- **Refusal mode**: a similarity threshold stops the model from answering questions the documents cannot support
+- **Confidence indicator** (High / Medium / Low) for every answer
+- **Document filter**: search only COLREGs, SOLAS or MARPOL
+- **Jurisdiction filter**: the USCG manual prints International and Inland rules side by side, so the user can pick one version
+- **Chat interface** with example questions, conversation history and adjustable top-k and threshold
+- **Feedback buttons** (👍 / 👎) and an **analytics tab** (questions, refusal rate, response time, helpful rate)
+- **Evaluation script** with Hit@1, Hit@4, MRR, a refusal test, hard negatives and a threshold sweep
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A[PDF documents] --> B[Chunk 800 chars, 150 overlap]
+    B --> C[Embed with all-MiniLM-L6-v2]
+    C --> D[(FAISS index)]
+    Q[User question] --> E[Embed question]
+    E --> D
+    D --> F{Top score >= threshold?}
+    F -- No --> G[Refuse: not in documents]
+    F -- Yes --> H[Prompt with retrieved passages]
+    H --> I[Llama 3.2 via Ollama]
+    I --> J[Cited answer]
+    J --> K[Log query and feedback]
+```
+
+## Tech stack
+
+Python · sentence-transformers (`all-MiniLM-L6-v2`) · FAISS · pypdf · Ollama (`llama3.2`) · Streamlit
+
+## Quick start
+
+```bash
+git clone https://github.com/Kunal-Chauhan-0806/MarineRAG.git
+cd MarineRAG
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+ollama pull llama3.2
+mkdir -p data    # add your COLREGs / SOLAS / MARPOL PDFs here
+streamlit run app.py
+```
+
+The PDFs are not stored in this repository. Use text-based (not scanned) PDFs, for example the USCG Navigation Rules (International and Inland) and the IMO convention summaries.
 
 ## Evaluation
-    python3 eval.py
-Retrieval hit rate: 20/20. Correct refusals on off-topic questions: 4/4.
+
+```bash
+python3 eval.py
+```
+
+Baseline on the first test set: **20/20** answerable questions retrieved the correct document, and **4/4** off-topic questions were refused at a threshold of 0.38. The script now also reports Hit@1, MRR, a larger off-topic set, hard negatives (maritime topics that are *not* in the documents) and a threshold sweep. Results are saved to `results/eval_results.csv`.
+
+## Project structure
+
+```
+rag.py          chunking, embeddings, FAISS retrieval, grounded generation
+app.py          Streamlit chat app with filters and analytics tab
+analytics.py    query and feedback logging, usage statistics
+eval.py         retrieval and refusal evaluation
+docs/           business case and screenshots
+```
+
+## Known limitations
+
+- Knowledge base is unbalanced: the COLREGs manual is full length, while the SOLAS and MARPOL files are short summaries
+- The refusal threshold sits close to some valid questions, and maritime questions outside the documents can score high (see hard negatives in the evaluation)
+- The jurisdiction filter relies on section markers in the PDF text, so chunks without a marker are treated as neutral
+- A 3B local model follows citation instructions less reliably than a larger model
+- Educational prototype: **not** a substitute for the official consolidated IMO texts
+
+## Business case
+
+See [docs/BUSINESS_CASE.md](docs/BUSINESS_CASE.md) for the market, users, revenue model and risks.
+
+## Author
+
+Kunal Chauhan, B.Tech Computer Engineering + MBA (Tech), Mumbai
