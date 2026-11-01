@@ -1,0 +1,33 @@
+type,document,question,rank_of_correct_doc,top_score,decision
+answerable,COLREGs,What are the rules for a vessel overtaking another vessel?,1,0.738,
+answerable,COLREGs,What is the give-way vessel in a crossing situation?,1,0.727,
+answerable,COLREGs,What lights must a power-driven vessel under 50 metres show at night?,1,0.692,
+answerable,COLREGs,What is a safe speed under the collision regulations?,1,0.54,
+answerable,COLREGs,What sound signals are used in restricted visibility?,1,0.595,
+answerable,COLREGs,What are the responsibilities of a vessel in a narrow channel?,1,0.696,
+answerable,COLREGs,What is the rule for head-on situations between power-driven vessels?,1,0.704,
+answerable,COLREGs,What must a vessel do to avoid collision by taking action?,1,0.718,
+answerable,COLREGs,What are traffic separation schemes?,1,0.605,
+answerable,COLREGs,What day shapes does a vessel not under command display?,1,0.525,
+answerable,COLREGs,What lights does a sailing vessel show?,1,0.75,
+answerable,COLREGs,What does the look-out rule require?,1,0.49,
+answerable,SOLAS,What does SOLAS cover?,1,0.4,
+answerable,SOLAS,What are the requirements for lifesaving appliances on ships?,1,0.732,
+answerable,SOLAS,What does SOLAS say about fire protection?,1,0.627,
+answerable,SOLAS,What is the purpose of the SOLAS convention?,1,0.663,
+answerable,MARPOL,What does MARPOL regulate?,1,0.568,
+answerable,MARPOL,What are the annexes of MARPOL?,1,0.497,
+answerable,MARPOL,How does MARPOL control oil pollution from ships?,1,0.636,
+answerable,MARPOL,What does MARPOL say about air pollution from ships?,1,0.703,
+off_topic,,What is the capital of France?,,0.216,refused
+off_topic,,How do I bake a chocolate cake?,,0.119,refused
+off_topic,,What are the rules for commercial aircraft landing?,,0.374,refused
+off_topic,,Who won the football world cup in 2018?,,0.086,refused
+off_topic,,Explain the rules of cricket.,,0.361,refused
+off_topic,,What is the GDP of India?,,0.268,refused
+off_topic,,How do I treat a fever at home?,,0.113,refused
+off_topic,,What is the best way to learn Python programming?,,0.113,refused
+hard_negative,,What are the STCW minimum rest hour requirements for seafarers?,,0.482,answered
+hard_negative,,What does the ISM Code require for safety management audits?,,0.59,answered
+hard_negative,,What are the IMSBC Code rules for carrying bulk cargo?,,0.701,answered
+hard_negative,,What penalties does the Indian Merchant Shipping Act impose?,,0.55,answered
