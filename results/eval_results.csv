@@ -27,7 +27,7 @@ off_topic,,Explain the rules of cricket.,,0.361,refused
 off_topic,,What is the GDP of India?,,0.268,refused
 off_topic,,How do I treat a fever at home?,,0.113,refused
 off_topic,,What is the best way to learn Python programming?,,0.113,refused
-hard_negative,,What are the STCW minimum rest hour requirements for seafarers?,,0.482,answered
+hard_negative,,What are the STCW minimum rest hour requirements for seafarers?,,0.482,refused
 hard_negative,,What does the ISM Code require for safety management audits?,,0.59,answered
-hard_negative,,What are the IMSBC Code rules for carrying bulk cargo?,,0.701,answered
-hard_negative,,What penalties does the Indian Merchant Shipping Act impose?,,0.55,answered
+hard_negative,,What are the IMSBC Code rules for carrying bulk cargo?,,0.701,refused
+hard_negative,,What penalties does the Indian Merchant Shipping Act impose?,,0.55,refused

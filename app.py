@@ -31,6 +31,8 @@ with st.sidebar:
                              help="Leave empty to search all documents.")
     jurisdiction = st.radio("COLREGs version", ["Both", "International", "Inland"],
                             help="The USCG manual prints International and Inland rules side by side.")
+    guard = st.checkbox("Keyword grounding check", value=True,
+                        help="Refuse when a named term in the question (e.g. STCW) does not appear in the retrieved passages.")
     if st.button("Clear conversation"):
         st.session_state.messages = []
         st.rerun()
@@ -51,7 +53,7 @@ def rate(idx, rating):
 def run_query(q):
     st.session_state.messages.append({"role": "user", "content": q})
     with st.spinner("Searching regulations..."):
-        res = answer(q, k=k, threshold=threshold, sources=sources or None, jurisdiction=jurisdiction)
+        res = answer(q, k=k, threshold=threshold, sources=sources or None, jurisdiction=jurisdiction, guard=guard)
     analytics.log_query(res, jurisdiction, sources)
     st.session_state.messages.append({"role": "assistant", "content": res["answer"], "result": res})
 
@@ -77,7 +79,7 @@ with tab_chat:
             if m["role"] == "assistant":
                 r = m["result"]
                 st.caption(f"Confidence: {BADGE[r['confidence']]}  |  Top score: {r['top_score']:.2f}  |  "
-                           f"Response time: {r['latency']} s" + ("  |  Refused" if r["refused"] else ""))
+                           f"Response time: {r['latency']} s" + (f"  |  Refused ({r['reason']})" if r["refused"] else ""))
                 if r["hits"]:
                     with st.expander(f"Sources retrieved ({len(r['hits'])})"):
                         for c, s in r["hits"]:

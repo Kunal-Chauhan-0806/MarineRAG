@@ -65,7 +65,7 @@ Weekly active users, helpful rate (from the 👍 / 👎 buttons), refusal rate, 
 | Copyright of official IMO texts | Licence the content or use publisher partnerships; prototype uses public summaries |
 | Outdated regulations | Version tagging and scheduled content updates |
 | Small local model quality | Evaluate larger models; offer hosted option |
-| Hard negatives scoring above threshold | Better calibration and re-ranking (see evaluation) |
+| Maritime questions outside the loaded documents scoring above the threshold | Keyword grounding guard added after evaluation showed the threshold alone refused 0/4; re-ranker and answer-faithfulness scoring planned |
 
 ## 10. Roadmap
 Add full SOLAS and MARPOL texts and DG Shipping circulars; hybrid keyword plus vector search; re-ranker; multilingual support; mobile and offline packaging; automated answer-faithfulness scoring.

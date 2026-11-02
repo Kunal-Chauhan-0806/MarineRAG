@@ -1,5 +1,5 @@
 import csv, os
-from rag import retrieve, THRESHOLD
+from rag import retrieve, refusal_decision, key_terms, THRESHOLD
 
 KW = {"COLREGs": "uscg", "SOLAS": "solas", "MARPOL": "marpol"}
 
@@ -70,26 +70,34 @@ for doc in KW:
 
 print(f"\nLowest score on a valid question: {min(scores):.2f}  (threshold = {THRESHOLD})")
 
+false_ref = [q for q, _ in answerable if refusal_decision(q, retrieve(q, k=4), THRESHOLD, guard=True)[0]]
+print(f"Valid questions wrongly refused (threshold + guard): {len(false_ref)}/{n}")
+for q in false_ref:
+    print("   wrongly refused:", q)
 
-def refusal_block(title, questions, label):
+
+def refusal_block(title, questions, label, guard=True):
     print(f"\n=== {title} ===")
     top_scores, ok = [], 0
     for q in questions:
-        top = retrieve(q, k=4)[0][1]
+        res = retrieve(q, k=4)
+        top = res[0][1]
         top_scores.append(top)
-        refused = top < THRESHOLD
+        refused, why = refusal_decision(q, res, THRESHOLD, guard)
         ok += refused
-        print(("REFUSED" if refused else "ANSWERED (bad)"), f"| top {top:.2f} | {q}")
-        rows.append([label, "", q, "", round(top, 3), "refused" if refused else "answered"])
+        print(("REFUSED" if refused else "ANSWERED (bad)"), f"| top {top:.2f} | {q}" + (f"  [{why}]" if refused else ""))
+        if guard:
+            rows.append([label, "", q, "", round(top, 3), "refused" if refused else "answered"])
     print(f"Correct refusals: {ok}/{len(questions)} = {ok/len(questions):.0%}  (highest score: {max(top_scores):.2f})")
     return top_scores
 
 
-off_scores = refusal_block("Refusal test: off-topic questions", off_topic, "off_topic")
-hard_scores = refusal_block("Refusal test: maritime but outside the documents (hard negatives)", hard_negatives, "hard_negative")
+off_scores = refusal_block("Refusal test: off-topic questions (threshold + guard)", off_topic, "off_topic")
+refusal_block("Hard negatives, threshold only (guard OFF)", hard_negatives, "hard_negative_no_guard", guard=False)
+hard_scores = refusal_block("Hard negatives, threshold + keyword grounding guard (guard ON)", hard_negatives, "hard_negative")
 
 print("\n=== Threshold sweep ===")
-print("threshold | answerable accepted | off-topic refused | hard negatives refused")
+print("threshold | answerable accepted | off-topic refused | hard negatives refused (threshold only)")
 for t in [0.30, 0.34, 0.38, 0.42, 0.46, 0.50]:
     acc = sum(1 for s in scores if s >= t) / len(scores)
     off = sum(1 for s in off_scores if s < t) / len(off_scores)

@@ -88,6 +88,38 @@ def confidence_level(score, threshold=THRESHOLD):
     return "Low"
 
 
+def key_terms(q):
+    """Named terms in a question: acronyms (STCW, SOLAS) and capitalised words that are not the first word."""
+    terms = []
+    for m in re.finditer(r"\b[A-Z]{3,}s?\b|\b[A-Z][a-z]{3,}\b", q):
+        w = m.group()
+        if m.start() == 0 and re.fullmatch(r"[A-Z][a-z]{3,}", w):
+            continue
+        if w.endswith("s") and w[:-1].isupper():
+            w = w[:-1]
+        terms.append(w)
+    return terms
+
+
+def missing_terms(q, hits):
+    """Key terms from the question that appear nowhere in the retrieved passages or their document names."""
+    pool = " ".join(f"{c['text']} {c['src']} {c['label']}" for c, _ in hits)
+    return [t for t in key_terms(q) if not re.search(rf"\b{re.escape(t)}s?\b", pool, re.I)]
+
+
+def refusal_decision(q, hits, threshold=THRESHOLD, guard=True):
+    """Return (refuse, reason). Layer 1: similarity threshold. Layer 2: keyword grounding guard."""
+    if not hits:
+        return True, "no passages found"
+    if hits[0][1] < threshold:
+        return True, "low similarity"
+    if guard:
+        miss = missing_terms(q, hits)
+        if miss:
+            return True, "not in documents: " + ", ".join(miss)
+    return False, ""
+
+
 SYSTEM_PROMPT = (
     "You are MarineRAG, an assistant for maritime safety regulations. "
     "Answer ONLY from the provided context. Be concise and use short bullet points where helpful. "
@@ -96,16 +128,22 @@ SYSTEM_PROMPT = (
 )
 
 
-def answer(q, k=4, threshold=THRESHOLD, sources=None, jurisdiction="Both"):
+def answer(q, k=4, threshold=THRESHOLD, sources=None, jurisdiction="Both", guard=True):
     """Full RAG answer. Returns a dict so the UI and the logger can use every field."""
     t0 = time.perf_counter()
     hits = retrieve(q, k, sources, jurisdiction)
     top = hits[0][1] if hits else 0.0
     result = {"question": q, "hits": hits, "top_score": top, "refused": False,
-              "confidence": confidence_level(top, threshold), "error": None}
-    if not hits or top < threshold:
+              "confidence": confidence_level(top, threshold), "error": None, "reason": ""}
+    refuse, why = refusal_decision(q, hits, threshold, guard)
+    if refuse:
         result["refused"] = True
-        result["answer"] = "I couldn't find this in the loaded maritime documents."
+        result["reason"] = why
+        if why.startswith("not in documents"):
+            result["answer"] = ("I couldn't find " + why.split(": ", 1)[1] +
+                                " in the loaded maritime documents, so I can't answer this reliably.")
+        else:
+            result["answer"] = "I couldn't find this in the loaded maritime documents."
     else:
         ctx = "\n\n".join(f"[{c['src']} p.{c['page']}] {c['text']}" for c, _ in hits)
         try:
