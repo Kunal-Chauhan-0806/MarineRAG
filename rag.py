@@ -123,7 +123,7 @@ def refusal_decision(q, hits, threshold=THRESHOLD, guard=True):
 SYSTEM_PROMPT = (
     "You are MarineRAG, an assistant for maritime safety regulations. "
     "Answer ONLY from the provided context. Be concise and use short bullet points where helpful. "
-    "Cite every claim as [file p.X]. If the context shows both INLAND and INTERNATIONAL versions of a rule, "
+    "Cite every claim as [FILENAME p.X, using the exact file name shown in the context]. If the context shows both INLAND and INTERNATIONAL versions of a rule, "
     "say which one you are quoting. If the context does not contain the answer, say so clearly."
 )
 

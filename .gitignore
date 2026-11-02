@@ -3,3 +3,10 @@ __pycache__/
 *.pdf
 logs/
 .DS_Store
+mr_guard/
+marinerag_guard_update/
+marinerag_guard_update.zip
+__pycache__/
+logs/
+venv/
+data/*.pdf

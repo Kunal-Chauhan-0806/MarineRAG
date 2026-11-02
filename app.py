@@ -86,7 +86,7 @@ with tab_chat:
                             tag = f" · {c['jur']}" if c["jur"] != "neutral" else ""
                             st.markdown(f"**{c['label']}**, {c['src']} p.{c['page']}{tag} (score {s:.2f})")
                             st.caption(c["text"][:400])
-                if not r["refused"]:
+                if not r["refused"] and not r["error"]:
                     if m.get("rated"):
                         st.caption("Thanks for the feedback.")
                     else:
